@@ -1,20 +1,27 @@
 #!/usr/bin/env lua
 
 local inspect = require 'inspect'
+local colors = require 'ansicolorsx'
 
---[[
-local function assert()
-    print()
-    print()
+local function cool_assert(a, b, cond)
+    print('cool_assert', inspect(a), inspect(b))
+    --if EQ(a, b) == cond then
+    if EQ(a, b) == cond then
+        print(colors('%{green}passed%{reset}'))
+    else
+        print(colors('%{red}not passed%{reset}'))
+    end
 end
---]]
 
---assert = assert
+assert = cool_assert
 
 -- Сравнивает два аргумента рекурсивно на равенство. Возвращает истину если
 -- все элементы таблицы равны между собой. 
 -- XXX: userdata и thread ?
 function EQ(t1, t2) 
+    local prev_print_func = print
+    print = function() end
+
     print('t1, t2', t1, t2)
     if type(t1) == "table" and type(t2) == "table" then
         local index1, value1 = next(t1, nil)
@@ -26,9 +33,11 @@ function EQ(t1, t2)
             print('     index2, value2', index2, value2)
             if not index2 and not value2 then
                 print("tr")
+                print = prev_print_func
                 return true
             else
                 print("fls")
+                print = prev_print_func
                 return false
             end
         end
@@ -96,13 +105,16 @@ function EQ(t1, t2)
         print("mod1_num", mod1_num)
         print("mod2_num", mod2_num)
 
+        print = prev_print_func
         return mod1_num == 0 and mod2_num == 0 
 
     elseif type(t1) == type(t2) and t1 == t2 then
         -- XXX: userdata и thread ?
+        print = prev_print_func
         return true
     end
 
+    print = prev_print_func
     return false
 end
 
@@ -139,52 +151,56 @@ if F == ref_F then
     print("function and its reference are equal")
 end
 
-assert(EQ(1, 1) == true)
-assert(EQ(1, 0) == false)
-assert(EQ("1", 0) == false)
-assert(EQ("1", false) == false)
+cool_assert(1, 1, true)
+cool_assert(1, 0, false)
+cool_assert("1", 0, false)
+cool_assert("1", false, false)
 
-assert(EQ("s1", "s1") == true)
-assert(EQ("", "s1") == false)
+cool_assert("s1", "s1", true)
+cool_assert("", "s1", false)
 
-assert(EQ(true, false) == false)
-assert(EQ(false, false) == true)
-assert(EQ(true, true) == true)
+cool_assert(true, false, false)
+cool_assert(false, false, true)
+cool_assert(true, true, true)
 
-assert(EQ(function() end, function() end) == false)
-assert(EQ(F, ref_F) == true)
+cool_assert(function() end, function() end, false)
+cool_assert(F, ref_F, true)
 
-assert(EQ({}, {}) == true)
-assert(EQ({3, 2, 1}, {3, 2, 1}) == true)
+cool_assert({}, {}, true)
+cool_assert({3, 2, 1}, {3, 2, 1}, true)
 
 --      ключ
 --        |  значение
 --        ↓    ↓
 -- t1 = {[1] = 3, [2] = 2, [3] = 1}
 -- t2 = {[1] = 1, [2] = 2, [3] = 3}) == true)
-assert(EQ({3, 2, 1}, {1, 2, 3}) == true)
-assert(EQ({3, 2}, {3, 2, 1}) == false)
-assert(EQ({"G", "O", "V", }, {"O", "G", "V"}) == true)
-assert(EQ({"G", "", "V", }, {"O", "G", "V"}) == false)
-assert(EQ({1, true}, {true, 1}) == true)
-assert(EQ({{}}, {{}}) == true)
-assert(EQ({{1}}, {{1}}) == true)
-assert(EQ(  {{1, { k = 1}}},
-            {{{k = 1}, 1}}) == true)
+cool_assert({3, 2, 1}, {1, 2, 3}, true)
+cool_assert({3, 2}, {3, 2, 1}, false)
+cool_assert({"G", "O", "V", }, {"O", "G", "V"}, true)
+cool_assert({"G", "", "V", }, {"O", "G", "V"}, false)
+cool_assert({1, true}, {true, 1}, true)
+cool_assert({{}}, {{}}, true)
+cool_assert({{1}}, {{1}}, true)
+cool_assert({{1, { k = 1}}},
+            {{{k = 1}, 1}}, true)
 
-assert(EQ(
+cool_assert(
     { k = {1, 2, 3}},
-    { k = {1, 2, 3}}
-), true)
-assert(EQ(
     { k = {1, 2, 3}},
-    { k = {3, 1, 2}}
-), true)
-assert(EQ(
+    true
+)
+cool_assert(
     { k = {1, 2, 3}},
-    { _k = {3, 1, 2}}
-), false)
-assert(EQ(
+    { k = {3, 1, 2}},
+    true
+)
+cool_assert(
     { k = {1, 2, 3}},
-    { _k = {}}
-), false)
+    { _k = {3, 1, 2}},
+    false
+)
+cool_assert(
+    { k = {1, 2, 3}},
+    { _k = {}},
+    false
+)
