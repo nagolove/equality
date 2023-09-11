@@ -33,38 +33,6 @@ function EQ(t1, t2)
             end
         end
 
-        --[[
-        while index1 do
-            --local value2 = t2[index1]
-            --if not value2 then
-                --print("search")
-
-                local has_false = false
-                local index2, value2 = next(t2, nil)
-                while index2 do
-                    if not EQ(value1, value2) then
-                        --has_false = true
-                        return false
-                    end
-                    index2, value2 = next(t2, index2)
-                end
-                --return false
-            --else
-                --return EQ(value1, value2)
-            --end
-            if not has_false then
-                --return true
-            end
-
-            print('index1, value1', index1, value1)
-            print('index2, value2', index2, value2)
-            index1, value1 = next(t1, index1)
-
-            --index2, value2 = next(tmp, index2)
-        end
-        return true
-        --]]
-
         print('t1', inspect(t1))
         print('t2', inspect(t2))
        
@@ -89,13 +57,22 @@ function EQ(t1, t2)
 
         local tmp_index, tmp_value = next(values2keys1, nil)
         while tmp_index do
-            values2keys2_mod[tmp_index] = nil
+            -- Здесь происходит поиск, сравнение и удаление. Сравнение
+            -- заменить вызовом EQ() для тождественности пустых таблиц
+            --if EQ(tmp_index, values2keys2_mod[tmp_index]) then
+            do
+                -- TODO: использовать значения, а не индекс
+                values2keys2_mod[tmp_index] = nil
+            end
             tmp_index, tmp_value = next(values2keys1, tmp_index)
         end
 
         local tmp_index, tmp_value = next(values2keys2, nil)
         while tmp_index do
-            values2keys1_mod[tmp_index] = nil
+            --if EQ(tmp_index, values2keys1_mod[tmp_index]) then
+            do
+                values2keys1_mod[tmp_index] = nil
+            end
             tmp_index, tmp_value = next(values2keys2, tmp_index)
         end
         
@@ -120,23 +97,6 @@ function EQ(t1, t2)
         print("mod2_num", mod2_num)
 
         return mod1_num == 0 and mod2_num == 0 
-
-        --[[
-        while index1 do
-            --local value2 = t2[index1]
-            --if not value2 then
-                --print("search")
-
-                local has_false = false
-                local index2, value2 = next(t2, nil)
-                while index2 do
-                    if not EQ(value1, value2) then
-                        --has_false = true
-                        return false
-                    end
-                end
-        end
-        --]]
 
     elseif type(t1) == type(t2) and t1 == t2 then
         -- XXX: userdata и thread ?
